@@ -184,6 +184,7 @@ class LoRAFinetuneRecipeSingleDevice(FTRecipeInterface):
         self._metric_logger.log_config(cfg)
 
         # save the config to the output directory
+        os.makedirs(cfg.checkpointer.output_dir, exist_ok=True)
         OmegaConf.save(cfg, os.path.join(cfg.checkpointer.output_dir, "training_config.yml"))
 
         self._model_compile = cfg.compile

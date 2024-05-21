@@ -50,19 +50,13 @@ dataset:
     _component_: ds.RoundRobinDataset
     datasets:
       - _component_: ds.LlavaInstructDataset
-        ib_embed_path: ds/coco_llava_instruct/*.ib_embed.pt
-        clip_embed_path: ds/coco_llava_instruct/*.clip_embed.pt
-        caption_path: ds/coco_llava_instruct/*.caption.pt
+        dataset_path: ds/coco_llava_instruct/output.parquet
         train_on_input: False
       - _component_: ds.LlavaInstructDataset
-        ib_embed_path: ds/vision_flan/*.ib_embed.pt
-        clip_embed_path: ds/vision_flan/*.clip_embed.pt
-        caption_path: ds/vision_flan/*.caption.pt
+        dataset_path: ds/vision_flan/output.parquet
         train_on_input: False
       - _component_: ds.CaptionInstructDataset
-        ib_embed_path: ds/sam_llava/00.ib_embed.pt
-        clip_embed_path: ds/sam_llava/00.clip_embed.pt
-        caption_path: ds/sam_llava/00.caption.pt
+        dataset_path: ds/sam_llava/output.parquet
         train_on_input: False
       # - _component_: ds.BagelLlama3Dataset
       #   parquet_path: ds/bagel/bagel-input-output-v1.0.parquet

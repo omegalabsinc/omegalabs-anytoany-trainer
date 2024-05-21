@@ -33,12 +33,6 @@ RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py && \
 
 WORKDIR /app
 
-COPY ./llama3 llama3
-RUN python -m pip install -e llama3
-
-COPY ./ImageBind ImageBind
-RUN python -m pip install -e ImageBind
-
 COPY setup.py .
 COPY requirements.txt .
 RUN python -m pip install -r requirements.txt
@@ -47,4 +41,3 @@ RUN python -m pip install -e .
 ENV HF_HOME=checkpoints
 
 CMD ["/bin/bash"]
-

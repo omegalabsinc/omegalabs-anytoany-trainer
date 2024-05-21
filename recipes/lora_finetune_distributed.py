@@ -208,6 +208,7 @@ class LoRAFinetuneRecipeDistributed(FTRecipeInterface):
             self._metric_logger.log_config(cfg)
 
             # save the config to the output directory
+            os.makedirs(cfg.checkpointer.output_dir, exist_ok=True)
             OmegaConf.save(cfg, os.path.join(cfg.checkpointer.output_dir, "training_config.yml"))
 
         checkpoint_dict = self.load_checkpoint(cfg_checkpointer=cfg.checkpointer)

@@ -1,5 +1,4 @@
-
-default: a2a models
+build-and-run: a2a sh-headless
 
 sh:
 	docker run -it --rm \
@@ -16,9 +15,6 @@ sh-headless:
 		--name a2a \
 		a2a
 	docker attach a2a
-
-download-everything:
-	wget https://huggingface.co/datasets/nimapourjafar/sam_llava/resolve/main/output.parquet -O ds/sam_llava/output.parquet
 
 a2a:
 	docker build -t $@ -f Dockerfile .
@@ -89,3 +85,14 @@ ds/vision_flan/%:
 bagel: ds/bagel/bagel-input-output-v1.0.parquet
 ds/bagel/bagel-%-v1.0.parquet:
 	wget https://huggingface.co/datasets/jondurbin/bagel-llama-3-v1.0/resolve/main/bagel-$*-v1.0.parquet?download=true -O $@
+
+download-base-model:
+	tune download meta-llama/Meta-Llama-3-8B --output-dir checkpoints/Meta-Llama-3-8B
+
+download-datasets: download-sam_llava-dataset download-coco_llava_instruct-dataset download-vision_flan-dataset
+
+download-%-dataset:
+	mkdir -p ds/$*
+	wget https://huggingface.co/datasets/nimapourjafar/$*/resolve/main/output.parquet -O ds/$*/output.parquet
+
+download-everything: download-base-model download-datasets

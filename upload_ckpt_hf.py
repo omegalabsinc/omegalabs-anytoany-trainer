@@ -64,7 +64,7 @@ tags:
 
 This is an Any-to-Any model checkpoint for the OMEGA Labs x Bittensor Any-to-Any subnet.
 
-Check out the [git repo](https://github.com/omegalabsinc/omegalabs-anytoany-subnet) and find us on X: [@omegalabsai](https://x.com/omegalabsai)."""
+Check out the [git repo](https://github.com/omegalabsinc/omegalabs-bittensor-anytoany) and find us on X: [@omegalabsai](https://x.com/omegalabsai)."""
         )
 
 

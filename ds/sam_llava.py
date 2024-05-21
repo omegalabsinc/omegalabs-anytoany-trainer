@@ -27,8 +27,8 @@ image_caption_templates = [{
 
 
 class CaptionInstructDataset(IterableDataset):
-    def __init__(self, ib_embed_path, clip_embed_path, caption_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0):
-        self._data = EmbedCaptionDataset(ib_embed_path, clip_embed_path, caption_path, world_size, rank)
+    def __init__(self, dataset_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0):
+        self._data = EmbedCaptionDataset(dataset_path, world_size, rank)
         self._len = len(self._data) * len(image_caption_templates)
         self._data = iter(self._data)
         self._tokenizer = tokenizer
