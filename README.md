@@ -9,6 +9,10 @@ To get started with training, just complete the following steps:
 2. Log into Huggingface: `huggingface-cli login`. Make sure your account has access to Llama-3-8B on HF, you can get access [here](https://huggingface.co/meta-llama/Meta-Llama-3-8B)
 3. Download the base model and datasets: `make download-everything`
 4. Start training! `make finetune-x1` on a single GPU instance, or `make finetune-xN` where N is the number of GPUs e.g. `make finetune-x8` to train on a machine with 8 GPUs
+5. **Important**: Once you are done training, don't forget to upload the model! [See instructions below.](#uploading-model-to-huggingface)
+
+## Uploading model to Huggingface
+From within the container, just run `python upload_ckpt_hf.py --ckpt_dir <checkpoint directory> --epoch <epoch number to upload> --hf_repo_id <repo id to upload to>`
 
 ## Requirements
 - GPU with 24+ GB VRAM, ideally 30+
