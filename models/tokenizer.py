@@ -6,18 +6,24 @@ from torchtune.modules.tokenizers._tiktoken import (
     MAX_ENCODE_CHARS,
     MAX_NO_WHITESPACE_CHARS,
     ALL_SPECIAL_TOKENS,
-    START_HEADER_ID,
-    END_HEADER_ID
 )
   
 
 # use special tokens from TikTokenTokenizer, add some for MM delimiters
 START_IMAGE = "<|start_image|>"
 END_IMAGE = "<|end_image|>"
+START_VIDEO = "<|start_video|>"
+END_VIDEO = "<|end_video|>"
+START_AUDIO = "<|start_audio|>"
+END_AUDIO = "<|end_audio|>"
 
 A2A_SPECIAL_TOKENS = ALL_SPECIAL_TOKENS[:-2] + [
     START_IMAGE,
     END_IMAGE,
+    START_VIDEO,
+    END_VIDEO,
+    START_AUDIO,
+    END_AUDIO,
 ] + ALL_SPECIAL_TOKENS[-2:]
 
 # override to allow START_IMAGE, END_IMAGE to be encoded
