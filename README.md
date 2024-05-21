@@ -15,5 +15,5 @@ To get started with training, just complete the following steps:
 From within the container, just run `python upload_ckpt_hf.py --ckpt_dir <checkpoint directory> --epoch <epoch number to upload> --hf_repo_id <repo id to upload to>`
 
 ## Requirements
-- GPU with 24+ GB VRAM, ideally 30+
+- GPU with 32+ GB VRAM
 - CPU with at least 40 GB RAM
