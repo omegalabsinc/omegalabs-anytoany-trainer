@@ -18,3 +18,20 @@ From within the container, just run `python upload_ckpt_hf.py --ckpt_dir <checkp
 ## Requirements
 - GPU with at least 48 GB VRAM
 - CPU with at least 40 GB RAM
+
+## Experiment Ideas
+Some potential ways for miners to train better checkpoints and get an edge in the incentives are:
+- Experiment with the perception_tokens hyperparameter (this refers to how many text tokens each image/audio/video is mapped to)
+- Incorporate new datasets and experiment with data cleaning / filtering techniques
+- Tweak the prompt templating to make the model robust towards more generic instructions
+- Bring in more multi-modal interleaved datasets (e.g. datasets where images, video, audio, and text all appear in-line)
+  - Could try synthetic data generation here
+
+## Future Experiment Ideas
+Miners cannot experiment with the following ideas presently because the validation mechanism is intentionally fairly restrictive to start out, in order to limit the experimentation space. However, these are good directions to be thinking about for future experiments:
+- Multimodal tokenization (early fusion): [Chameleon](https://arxiv.org/abs/2405.09818)
+  - In general, we believe there will be a big push towards training end-to-end sequences 
+- [JEPA's](https://ai.meta.com/blog/v-jepa-yann-lecun-ai-model-video-joint-embedding-predictive-architecture/)
+- High-fidelity auto-regressive video generation
+- Zero-shot personalization
+- Screen understanding models

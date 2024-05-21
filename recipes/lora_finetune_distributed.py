@@ -109,6 +109,7 @@ class LoRAFinetuneRecipeDistributed(FTRecipeInterface):
     """
 
     def __init__(self, cfg: DictConfig) -> None:
+        self._cfg = cfg
         self._device = utils.get_device(device=cfg.device)
         self._dtype = utils.get_dtype(cfg.dtype, device=self._device)
 
@@ -432,6 +433,7 @@ class LoRAFinetuneRecipeDistributed(FTRecipeInterface):
             ignore_index=self._loss_fn.ignore_index,
             world_size=world_size,
             rank=rank,
+            perception_tokens=self._cfg.model.perception_tokens,
         )
         sampler = None
         dataloader = DataLoader(

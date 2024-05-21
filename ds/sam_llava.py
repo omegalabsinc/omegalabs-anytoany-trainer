@@ -27,7 +27,7 @@ image_caption_templates = [{
 
 
 class CaptionInstructDataset(IterableDataset):
-    def __init__(self, dataset_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0):
+    def __init__(self, dataset_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0, perception_tokens=1):
         self._data = EmbedCaptionDataset(dataset_path, world_size, rank)
         self._len = len(self._data) * len(image_caption_templates)
         self._data = iter(self._data)
@@ -36,6 +36,7 @@ class CaptionInstructDataset(IterableDataset):
         self.train_on_input = train_on_input
         self.max_seq_len = max_seq_len
         self._idx = 0
+        self._perception_tokens = ("0 " * perception_tokens)[:perception_tokens]
 
     def __len__(self):
         return self._len
@@ -57,7 +58,7 @@ class CaptionInstructDataset(IterableDataset):
         return template.replace(
             "{caption}", sample["caption"]
         ).replace(
-            "{image}", f"{START_IMAGE}0{END_IMAGE}"
+            "{image}", START_IMAGE + self._perception_tokens + END_IMAGE
         )
 
     def _prepare_sample(self, template: str, sample: Mapping[str, Any]):

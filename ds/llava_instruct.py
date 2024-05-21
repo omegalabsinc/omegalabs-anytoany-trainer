@@ -15,7 +15,7 @@ from ds.embed_caption_dataset import EmbedCaptionDataset
 
 
 class LlavaInstructDataset(IterableDataset):
-    def __init__(self, dataset_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0):
+    def __init__(self, dataset_path, tokenizer, train_on_input=False, max_seq_len=512, world_size=1, rank=0, perception_tokens=1):
         self._data = EmbedCaptionDataset(dataset_path, world_size, rank)
         self._len = len(self._data)
         self._data = iter(self._data)
@@ -23,6 +23,7 @@ class LlavaInstructDataset(IterableDataset):
         self._image_ids = self._tokenizer.encode(START_IMAGE + END_IMAGE, add_eos=False, add_bos=False)
         self.train_on_input = train_on_input
         self.max_seq_len = max_seq_len
+        self._perception_tokens = ("0 " * perception_tokens)[:perception_tokens]
 
     def __len__(self):
         return self._len
@@ -37,7 +38,7 @@ class LlavaInstructDataset(IterableDataset):
         role = {"human": "user", "gpt": "assistant"}[turn["from"]]
         return Message(
             role=role,
-            content=turn["value"].replace("<image>", f"{START_IMAGE}0{END_IMAGE}"),
+            content=turn["value"].replace("<image>", START_IMAGE + self._perception_tokens + END_IMAGE),
             masked=(role == "user" and not self.train_on_input)
         )
 

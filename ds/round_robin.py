@@ -9,17 +9,18 @@ from torchtune.config import instantiate
 
 
 class RoundRobinDataset(IterableDataset):
-    def __init__(self, datasets, tokenizer, world_size=1, rank=0):
+    def __init__(self, datasets, tokenizer, world_size=1, rank=0, perception_tokens=1):
         self._ds_cfg = datasets
         self._tokenizer = tokenizer
         self._world_size = world_size
         self._rank = rank
+        self._perception_tokens = perception_tokens
         self._reset_datasets()
         self._len = reduce(add, self._ds_lengths)
 
     def _reset_datasets(self):
         self._datasets = [
-            instantiate(cfg, tokenizer=self._tokenizer, world_size=self._world_size, rank=self._rank)
+            instantiate(cfg, tokenizer=self._tokenizer, world_size=self._world_size, rank=self._rank, perception_tokens=self._perception_tokens)
             for cfg in self._ds_cfg
         ]
         self._ds_indexes = [0 for d in self._datasets]

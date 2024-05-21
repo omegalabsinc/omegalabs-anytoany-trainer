@@ -98,7 +98,7 @@ class LoRAFinetuneRecipeSingleDevice(FTRecipeInterface):
     """
 
     def __init__(self, cfg: DictConfig) -> None:
-
+        self._cfg = cfg
         self._device = utils.get_device(device=cfg.device)
         # Reduced precision logic
         self._dtype = utils.get_dtype(cfg.dtype, device=self._device)
@@ -356,6 +356,7 @@ class LoRAFinetuneRecipeSingleDevice(FTRecipeInterface):
             batch_size=batch_size, # we are doing batching at dataset level
             tokenizer=self._tokenizer,
             ignore_index=self._loss_fn.ignore_index,
+            perception_tokens=self._cfg.model.perception_tokens,
         )
         sampler = None
         dataloader = DataLoader(

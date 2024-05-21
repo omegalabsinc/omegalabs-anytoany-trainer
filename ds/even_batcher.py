@@ -11,12 +11,13 @@ from torchtune import utils
 
 
 class EvenBatcher(IterableDataset):
-    def __init__(self, dataset, batch_size, tokenizer, ignore_index, world_size=1, rank=0, buffer_size=100, len_steps=5):
+    def __init__(self, dataset, batch_size, tokenizer, ignore_index, world_size=1, rank=0, buffer_size=100, len_steps=5, perception_tokens=1):
         self._dataset = instantiate(
             dataset,
             tokenizer=tokenizer,
             world_size=world_size,
-            rank=rank
+            rank=rank,
+            perception_tokens=perception_tokens,
         )
         self._pad_id = tokenizer.pad_id
         self._ignore_index = ignore_index
