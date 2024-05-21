@@ -42,6 +42,12 @@ checkpointer:
   output_dir: output/Meta-Llama-3-8B-Instruct/
   model_type: LLAMA3
 resume_from_checkpoint: False
+interim_checkpoint_steps: 5000
+
+interim_gen_steps: null
+max_new_tokens: 100
+temperature: 0.6  # 0.8 and 0.6 are popular values to try
+top_k: 300
 
 # Dataset and Sampler
 dataset:
@@ -49,6 +55,8 @@ dataset:
   dataset:
     _component_: ds.RoundRobinDataset
     datasets:
+      - _component_: ds.OmegaVideoCaptionDataset
+        length: 500000
       - _component_: ds.LlavaInstructDataset
         dataset_path: ds/coco_llava_instruct/output.parquet
         train_on_input: False
