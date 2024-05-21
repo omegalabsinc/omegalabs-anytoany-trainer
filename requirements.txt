@@ -1,0 +1,15 @@
+datasets
+transformers
+trl
+peft
+six
+git+https://github.com/pytorch/torchtune.git@8f59c2fecd722691271eecca630a526719a32f76#egg=torchtune
+lm_eval==0.4
+torchvision
+git+https://github.com/pytorch/data.git@c78bbc7c69809172d13ce80cc8098ebc3715b96e#egg=torchdata
+diffusers
+lmms_eval
+sortedcontainers
+ulid-py
+imagebind @ git+https://github.com/omegalabsinc/ImageBind.git@c226dd986bac5fab292093e28ec5a126fda123c9#egg=imagebind
+git+https://github.com/meta-llama/llama3.git@af6eedf7042fb51d00b2b26d8ef1ceaab73e1670
