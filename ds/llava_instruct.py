@@ -64,12 +64,14 @@ class LlavaInstructDataset(IterableDataset):
         context = {}
         in_image_embed = False
         for idx, tok in enumerate(tokens):
-            in_image_embed = in_image_embed and not tok == self._image_ids[1]
+            is_image_begin = tok == self._image_ids[0]
+            is_image_end = tok == self._image_ids[1]
+            in_image_embed = in_image_embed and not is_image_end
+            if is_image_begin:
+                context[idx+1] = {k: sample[k] for k in ["ib_embed", "clip_embed"]}
             if in_image_embed:
                 image_embed_mask_ids.append(idx)
-                #tokens[idx] # to support multiple embeds: get the value, match it up with the sample embed
-                context[idx] = {k: sample[k] for k in ["ib_embed", "clip_embed"]}
-            in_image_embed = in_image_embed or tok == self._image_ids[0]
+            in_image_embed = in_image_embed or is_image_begin
         if image_embed_mask_ids:
             mask[image_embed_mask_ids] = True
 
