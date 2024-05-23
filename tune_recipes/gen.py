@@ -6,7 +6,7 @@
 import itertools
 import sys
 import time
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import torch
 from torch import nn
@@ -18,7 +18,7 @@ from torchtune.utils._generation import sample
 from torchtune.models import convert_weights
 from torchtune.data import Message
 
-from models.tokenizer import START_IMAGE, END_IMAGE
+from models.tokenizer import START_IMAGE, END_IMAGE, START_AUDIO, END_AUDIO, START_VIDEO, END_VIDEO
 from imagebind.models.imagebind_model import ModalityType
 from diffusers import DiffusionPipeline
 
@@ -46,9 +46,11 @@ class InferenceRecipe:
     def __init__(self, cfg: DictConfig) -> None:
         self._device = utils.get_device(device=cfg.device)
         self._dtype = utils.get_dtype(dtype=cfg.dtype)
-        self._quantizer = config.instantiate(cfg.quantizer)
+        self._quantizer = config.instantiate(cfg.inference.quantizer)
         self._quantization_mode = utils.get_quantizer_mode(self._quantizer)
-
+        self.prompt_template = cfg.inference.prompt_template
+        perception_tokens = cfg.model.perception_tokens
+        self._perception_tokens = ("0 " * perception_tokens)[:perception_tokens]
         utils.set_seed(seed=cfg.seed)
 
     def setup(self, cfg: DictConfig) -> None:
@@ -65,7 +67,7 @@ class InferenceRecipe:
             model_cfg=cfg.model,
             model_state_dict=ckpt_dict[utils.MODEL_KEY],
         )
-        self._embed_model = self._setup_embed_model(model_cfg=cfg.embed_model)
+        self._embed_model = self._setup_embed_model(model_cfg=DictConfig({"_component_": "models.imagebind_huge"}))
         self._tokenizer = config.instantiate(cfg.tokenizer)
         self._image_ids = self._tokenizer.encode(START_IMAGE + END_IMAGE, add_eos=False, add_bos=False)
         self.use_clip = cfg.model.use_clip
@@ -117,9 +119,13 @@ class InferenceRecipe:
 
         return model
 
-
     def mm_process_prompt(self, prompt):
-        return prompt.replace("{image}", f"{START_IMAGE}0{END_IMAGE}")
+        return (
+            prompt
+                .replace("{image}", f"{START_IMAGE}{self._perception_tokens}{END_IMAGE}")
+                .replace("{audio}", f"{START_AUDIO}{self._perception_tokens}{END_AUDIO}")
+                .replace("{video}", f"{START_VIDEO}{self._perception_tokens}{END_VIDEO}")
+            )
 
     def get_image_embed(self, image_path):
         with torch.no_grad():
@@ -134,7 +140,7 @@ class InferenceRecipe:
             img = img.to(device=self._device, dtype=self._dtype)
             return self._clip_pipe.image_encoder(img).image_embeds.squeeze(0)
 
-    def extract_mm_context(self, image_path, tokens):
+    def extract_mm_context(self, video_ib_embed, tokens):
         context = {}
         in_image_embed = False
         for idx, tok in enumerate(tokens):
@@ -142,18 +148,17 @@ class InferenceRecipe:
             if in_image_embed:
                 #tokens[idx] # to support multiple embeds: get the value, match it up with the sample embed
                 context[idx] = {
-                    "ib_embed": self.get_image_embed(image_path),
-                    "clip_embed": self.get_clip_embed(image_path) if self.use_clip else None,
+                    "ib_embed": video_ib_embed,
                 }
             in_image_embed = in_image_embed or tok == self._image_ids[0]
         return context
 
     @torch.no_grad()
-    def generate(self, cfg: DictConfig):
+    def generate(self, cfg: DictConfig, video_ib_embed: List[float]):
         messages = [
             Message(
                 role="user",
-                content=self.mm_process_prompt(cfg.prompt),
+                content=self.mm_process_prompt(self.prompt_template),
             ),
             Message(
                 role="assistant",
@@ -162,14 +167,14 @@ class InferenceRecipe:
         ]
         tokens, mask = self._tokenizer.tokenize_messages(messages)
         tokens = tokens[:-2] # strip eot and eos
-        mm_context = [self.extract_mm_context(cfg.image, tokens)] # context should be a list, batch-id indexed
+        mm_context = [self.extract_mm_context(video_ib_embed, tokens)] # context should be a list, batch-id indexed
         prompt = torch.tensor(tokens, dtype=torch.int, device=self._device)
 
         self._model.tok_embeddings.set_context(mm_context)
         self._model.output.set_context(mm_context)
 
         bos_id = self._tokenizer.tt_model.encode("<|begin_of_text|>", allowed_special="all")[0]
-        allowed_id = self._tokenizer.tt_model.encode("<|eot_id|><|start_image|><|end_image|>", allowed_special="all")
+        allowed_id = self._tokenizer.tt_model.encode(f"<|eot_id|>{START_IMAGE}{END_IMAGE}{START_AUDIO}{END_AUDIO}{START_VIDEO}{END_VIDEO}", allowed_special="all")
         disallowed_tokens = list(set(range(bos_id, bos_id + 256)) - set(allowed_id))
         # self._model.output.weight.data[disallowed_tokens, :] = 0
 
@@ -222,7 +227,9 @@ class InferenceRecipe:
         )
         t = time.perf_counter() - t0
 
-        log.info(self._tokenizer.decode(generated_tokens))
+        cleaned_tokens = [t for t in generated_tokens[len(prompt):] if t not in disallowed_tokens + allowed_id]
+        caption = self._tokenizer.decode(cleaned_tokens)
+        log.info(caption)
 
         model_size = sum(
             [
@@ -240,6 +247,8 @@ class InferenceRecipe:
         )
         log.info(f"Bandwidth achieved: {model_size * tokens_sec / 1e9:.02f} GB/s")
         log.info(f"Memory used: {torch.cuda.max_memory_allocated() / 1e9:.02f} GB")
+
+        return caption
 
 
 @config.parse
