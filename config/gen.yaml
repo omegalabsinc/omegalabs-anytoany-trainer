@@ -7,17 +7,18 @@
 model:
   _component_: models.mmllama3_8b
   use_clip: false
+  perception_tokens: 2
 
 embed_model:
   _component_: models.imagebind_huge
 
 checkpointer:
   _component_: torchtune.utils.FullModelMetaCheckpointer
-  checkpoint_dir: output/Meta-Llama-3-8B-Instruct/
+  checkpoint_dir: output_checkpoints/experiment_1/
   checkpoint_files: [
     meta_model_0.pt
   ]
-  output_dir: output/Meta-Llama-3-8B-Instruct/
+  output_dir: output_checkpoints/experiment_1/
   model_type: LLAMA3
 
 device: cuda

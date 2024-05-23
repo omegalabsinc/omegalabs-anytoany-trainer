@@ -92,3 +92,4 @@ logs/
 Thumbs.db
 
 output/
+output_checkpoints/

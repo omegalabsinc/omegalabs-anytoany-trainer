@@ -512,6 +512,9 @@ class LoRAFinetuneRecipeSingleDevice(FTRecipeInterface):
                         self._metric_logger.log_dict(
                             memory_stats, step=self.total_training_steps
                         )
+                    
+                    if idx >= 50:
+                        break
 
             self.epochs_run += 1
             self.save_checkpoint(epoch=curr_epoch)

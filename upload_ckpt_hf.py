@@ -2,6 +2,7 @@ import os
 import argparse
 
 from huggingface_hub import HfApi
+from omegaconf import OmegaConf
 
 
 MODEL_FILE_PT = "meta_model_{epoch}.pt"
@@ -48,6 +49,13 @@ def upload_checkpoint(ckpt_dir, epoch, hf_repo_id):
     print(f"Successfully uploaded checkpoint '{ckpt_dir}' @ epoch={epoch} to {hf_repo_id}")
 
 
+def check_config(ckpt_dir):
+    config_file = os.path.join(ckpt_dir, CONFIG_FILE)
+    cfg = OmegaConf.load(config_file)
+    if cfg.model.use_clip:
+        raise ValueError("Cannot upload checkpoints with CLIP embeddings")
+
+
 def export_readme(ckpt_dir):
     readme_file = os.path.join(ckpt_dir, README_FILE)
     with open(readme_file, "w") as f:
@@ -71,6 +79,7 @@ Check out the [git repo](https://github.com/omegalabsinc/omegalabs-bittensor-any
 def main():
     args = parse_args()
     validate_repo(args.ckpt_dir, args.epoch)
+    check_config(args.ckpt_dir)
     export_readme(args.ckpt_dir)
     upload_checkpoint(args.ckpt_dir, args.epoch, args.hf_repo_id)
 
