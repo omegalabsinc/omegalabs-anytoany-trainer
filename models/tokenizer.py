@@ -61,7 +61,14 @@ class A2ATokenizer(TikTokenTokenizer):
             tokens.extend(
                 self.tt_model.encode(
                     substr,
-                    allowed_special=set([START_IMAGE, END_IMAGE]),
+                    allowed_special=set([
+                        START_IMAGE,
+                        END_IMAGE,
+                        START_VIDEO,
+                        END_VIDEO,
+                        START_AUDIO,
+                        END_AUDIO,
+                    ]),
                     disallowed_special=(),
                 )
             )

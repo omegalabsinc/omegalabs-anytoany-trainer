@@ -18,7 +18,7 @@ CLIP_DIM = 768
 
 
 class MMEmbedding(nn.Embedding):
-    def __init__(self, e, perception_tokens=1, use_clip=True):
+    def __init__(self, e, perception_tokens=1, use_clip=False):
         super().__init__(
             num_embeddings=e.num_embeddings,
             embedding_dim=e.embedding_dim,
@@ -84,15 +84,15 @@ class MMLinear(nn.Linear):
     def forward(self, input_bsd: Tensor) -> Tensor:
         # self._context has the indexes of image llama tokens: process these with proj_from_llama
         self._clip_projections = []
-        # self._context is first indexed by batch idx
-        for b, context_dict in enumerate(self._context):
-            # then by sequence idx
-            for s, embed in context_dict.items():
-                # and then must be transformed from llama3 dim -> clip dim
-                self._clip_projections.append((
-                    self.proj_from_llama(input_bsd[b, s]),
-                    (embed["clip_embed"] if "clip_embed" in embed else None) # terrible
-                ))
+        # # self._context is first indexed by batch idx
+        # for b, context_dict in enumerate(self._context):
+        #     # then by sequence idx
+        #     for s, embed in context_dict.items():
+        #         # and then must be transformed from llama3 dim -> clip dim
+        #         self._clip_projections.append((
+        #             self.proj_from_llama(input_bsd[b, s]),
+        #             (embed["clip_embed"] if "clip_embed" in embed else None) # terrible
+        #         ))
         r = super().forward(input_bsd)
         return r
 
@@ -106,7 +106,7 @@ def lora_mmllama3_8b(
     lora_alpha: float = 16,
     quantize_base: bool = False,
     perception_tokens: int = 2,
-    use_clip: bool = True
+    use_clip: bool = False
 ) -> TransformerDecoder:
     llama3 = lora_llama3_8b(
         lora_attn_modules,
@@ -123,7 +123,7 @@ def lora_mmllama3_8b(
 
 def mmllama3_8b(
     perception_tokens: int = 2,
-    use_clip: bool = True
+    use_clip: bool = False
 ) -> TransformerDecoder:
     llama3 = llama3_8b()
     llama3.tok_embeddings = MMEmbedding(llama3.tok_embeddings, perception_tokens, use_clip)

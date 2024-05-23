@@ -74,14 +74,14 @@ class CaptionInstructDataset(IterableDataset):
         tokens, mask = self._tokenizer.tokenize_messages(
             messages, max_seq_len=self.max_seq_len
         )
+
         if not self.train_on_input:
-            # don't learn that "<|start_header_id|>assistant" always comes after <|eot_id|>
+            # don't learn that "<|start_header_id|>" always comes after <|eot_id|>
             try:
-                first_false_idx = mask.index(True)
-                mask[first_false_idx:first_false_idx+3] = [False, False, False]
+                first_false_idx = mask.index(False) # <|start_header_id|>
+                mask[first_false_idx:first_false_idx+2] = [True, True]
             except ValueError:
                 pass
-        mask[-1] = False # also learn <|eot_id|>
 
         # ensure within-image tags tokens are masked out
         mask = np.array(mask)
@@ -89,12 +89,14 @@ class CaptionInstructDataset(IterableDataset):
         context = {}
         in_image_embed = False
         for idx, tok in enumerate(tokens):
-            in_image_embed = in_image_embed and not tok == self._image_ids[1]
+            is_image_begin = tok == self._image_ids[0]
+            is_image_end = tok == self._image_ids[1]
+            in_image_embed = in_image_embed and not is_image_end
+            if is_image_begin:
+                context[idx+1] = {k: sample[k] for k in ["ib_embed", "clip_embed"]}
             if in_image_embed:
                 image_embed_mask_ids.append(idx)
-                #tokens[idx] # to support multiple embeds: get the value, match it up with the sample embed
-                context[idx] = {k: sample[k] for k in ["ib_embed", "clip_embed"]}
-            in_image_embed = in_image_embed or tok == self._image_ids[0]
+            in_image_embed = in_image_embed or is_image_begin
         if image_embed_mask_ids:
             mask[image_embed_mask_ids] = True
 
