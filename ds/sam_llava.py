@@ -79,7 +79,7 @@ class CaptionInstructDataset(IterableDataset):
             # don't learn that "<|start_header_id|>" always comes after <|eot_id|>
             try:
                 first_false_idx = mask.index(False) # <|start_header_id|>
-                mask[first_false_idx:first_false_idx+1] = [True, True]
+                mask[first_false_idx:first_false_idx+2] = [True, True]
             except ValueError:
                 pass
 
