@@ -36,11 +36,11 @@ def pull_latest_omega_dataset() -> Dataset:
 
 def load_ckpt_from_hf(hf_repo_id: str) -> InferenceRecipe:
     config_path = hf_api.hf_hub_download(repo_id=hf_repo_id, filename=CONFIG_FILE)
-    train_cfg = OmegaConf.load(config_path)
     ckpt_files = [f for f in hf_api.list_repo_files(repo_id=hf_repo_id) if f.startswith(MODEL_FILE_PREFIX)]
     if len(ckpt_files) == 0:
         raise ValueError(f"No checkpoint files found in {hf_repo_id}")
     ckpt_path = hf_api.hf_hub_download(repo_id=hf_repo_id, filename=ckpt_files[0])
+    train_cfg = OmegaConf.load(config_path)
     train_cfg.model = DictConfig({
         "_component_": "models.mmllama3_8b",
         "use_clip": False,
@@ -58,6 +58,7 @@ def evaluate_checkpoint(inference_recipe: InferenceRecipe, config: DictConfig, d
     mini_batch = next(dataset.iter(batch_size=64))
     for video_emb, actual_caption in zip(mini_batch["video_embed"], mini_batch["description"]):
         generated_caption = inference_recipe.generate(cfg=config, video_ib_embed=video_emb)
+        print("-----------------------------------")
         print(f"Actual caption: {actual_caption}")
         print(f"Generated caption: {generated_caption}")
 

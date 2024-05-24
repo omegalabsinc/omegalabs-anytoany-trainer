@@ -69,7 +69,8 @@ class InferenceRecipe:
         )
         self._embed_model = self._setup_embed_model(model_cfg=DictConfig({"_component_": "models.imagebind_huge"}))
         self._tokenizer = config.instantiate(cfg.tokenizer)
-        self._image_ids = self._tokenizer.encode(START_IMAGE + END_IMAGE, add_eos=False, add_bos=False)
+        self._mm_ids_start = self._tokenizer.encode(START_IMAGE + START_AUDIO + START_VIDEO, add_eos=False, add_bos=False)
+        self._mm_ids_end = self._tokenizer.encode(END_IMAGE + END_AUDIO + END_VIDEO, add_eos=False, add_bos=False)
         self.use_clip = cfg.model.use_clip
         if self.use_clip:
             self._clip_pipe = DiffusionPipeline.from_pretrained("stabilityai/stable-diffusion-2-1-unclip-small", torch_dtype=self._dtype).to(self._device)
@@ -142,15 +143,15 @@ class InferenceRecipe:
 
     def extract_mm_context(self, video_ib_embed, tokens):
         context = {}
-        in_image_embed = False
+        in_mm_embed = False
         for idx, tok in enumerate(tokens):
-            in_image_embed = in_image_embed and not tok == self._image_ids[1]
-            if in_image_embed:
+            in_mm_embed = in_mm_embed and not tok in self._mm_ids_end
+            if in_mm_embed:
                 #tokens[idx] # to support multiple embeds: get the value, match it up with the sample embed
                 context[idx] = {
-                    "ib_embed": video_ib_embed,
+                    "ib_embed": torch.tensor(video_ib_embed, dtype=self._dtype, device=self._device),
                 }
-            in_image_embed = in_image_embed or tok == self._image_ids[0]
+            in_mm_embed = in_mm_embed or tok in self._mm_ids_start
         return context
 
     @torch.no_grad()
@@ -229,24 +230,6 @@ class InferenceRecipe:
 
         cleaned_tokens = [t for t in generated_tokens[len(prompt):] if t not in disallowed_tokens + allowed_id]
         caption = self._tokenizer.decode(cleaned_tokens)
-        log.info(caption)
-
-        model_size = sum(
-            [
-                p.numel() * p.dtype.itemsize
-                for p in itertools.chain(
-                    self._model.parameters(), self._model.buffers()
-                )
-            ]
-        )
-
-        tokens_generated = len(generated_tokens) - prompt.size(0)
-        tokens_sec = tokens_generated / t
-        log.info(
-            f"Time for inference: {t:.02f} sec total, {tokens_sec:.02f} tokens/sec"
-        )
-        log.info(f"Bandwidth achieved: {model_size * tokens_sec / 1e9:.02f} GB/s")
-        log.info(f"Memory used: {torch.cuda.max_memory_allocated() / 1e9:.02f} GB")
 
         return caption
 
