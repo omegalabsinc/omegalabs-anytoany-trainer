@@ -2,6 +2,7 @@
 
 ---
 NOTE: This repository is being archived. All the model training code has been merged into the [OMEGA Labs Any-to-Any Bittensor](https://github.com/omegalabsinc/omegalabs-anytoany-bittensor) repo. Please use that one instead.
+
 ---
 
 This repo is meant as a companion to the [OMEGA Labs Any-to-Any Bittensor repo](https://github.com/omegalabsinc/omegalabs-anytoany-bittensor). It provides a starting point for training any-to-any models, beginning with video-captioning.
