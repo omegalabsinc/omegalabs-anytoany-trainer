@@ -1,7 +1,7 @@
 # OMEGA Labs Any-to-Any Trainer
 
 ---
-NOTE: This repository is being archived. All the model training code has been merged into the [OMEGA Labs Any-to-Any Bittensor](https://github.com/omegalabsinc/omegalabs-anytoany-bittensor) repo. Please use that one instead.
+### NOTE: This repository is being archived. All the model training code has been merged into the [OMEGA Labs Any-to-Any Bittensor](https://github.com/omegalabsinc/omegalabs-anytoany-bittensor) repo. Please use that one instead.
 
 ---
 
